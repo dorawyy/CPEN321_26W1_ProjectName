@@ -1,3 +1,18 @@
+# Node / TypeScript
+# These are repeated in backend/.gitignore, but are needed here too: the moment
+# anyone adds a second Node project (an e2e/ suite, a scripts/ folder), its
+# node_modules would otherwise be committed.
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Secrets. Real environment files must never be committed; commit an .env.example
+# with placeholder values instead so the required variables are still documented.
+.env
+.env.*
+!.env.example
+
 # Gradle files
 .gradle/
 build/
@@ -31,3 +46,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# macOS files
+.DS_Store

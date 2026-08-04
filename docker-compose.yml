@@ -1,0 +1,66 @@
+# Full local stack: backend + external dependencies.
+#
+# First-time setup:
+#   cp backend/.env.example backend/.env
+#   # Fill in API keys (Google, TMDB, …) in backend/.env
+#
+# Start everything (dev mode with hot reload):
+#   docker compose up --build
+#
+# Run backend tests inside the same environment:
+#   docker compose run --rm backend npm test
+#
+# Production-like backend (compiled JS, no volume mounts):
+#   docker compose --profile prod up --build
+#
+# scripts/grade.sh still starts dependency services here, then runs the
+# backend natively with npm for TA compatibility.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    env_file:
+      - ./backend/.env
+    environment:
+      # Inside the compose network the DB host is the service name, not localhost.
+      MONGODB_URI: mongodb://mongodb:27017/cpen321
+    volumes:
+      - ./backend/src:/app/src
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  backend-prod:
+    profiles: [prod]
+    build:
+      context: ./backend
+      target: production
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    env_file:
+      - ./backend/.env
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/cpen321
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  mongodb:
+    image: mongo:7
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mongodb_data:

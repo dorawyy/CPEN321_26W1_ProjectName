@@ -1,28 +1,208 @@
-# CPEN321_[ProjectName]
+# CPEN 321 — [ProjectName]
 
-This repository is meant to serve as a general template for UBC CPEN321_V course project repositories. 
+> Replace `[ProjectName]` with your project name after creating the repository.
+
+## Repository Setup
+
+Complete these steps **once** when your team first creates the repository.
+
+### 1. Create a GitHub Organization
+
+1. One team member creates a GitHub Organization (e.g., `CPEN321-26W1-team-xx`)
+2. Add all teammates as organization members
+3. Add all TAs as organization members with **write** access:
+   - Masih [@Masihbr](https://github.com/Masihbr)
+   - Michael [@mickowale](https://github.com/mickowale)
+   - Yingying [@dorawyy](https://github.com/dorawyy)
+
+### 2. Create Repository from Template
+
+1. [Create a new repository from this template](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template)
+   under your organization
+2. Name it `CPEN321_YourProjectName`
+3. Set visibility to **Public**
+
+### 3. Set Up Codacy
+
+1. Sign in to [codacy.com](https://www.codacy.com) with GitHub
+2. Add your organization and repository
+3. Codacy automatically reads `detekt.yml` (Kotlin) and `.eslintrc.json`
+   (TypeScript) from the repo root
+
+### 4. Create a GitHub Project Board
+
+Use [GitHub Projects](https://docs.github.com/en/issues/planning-and-tracking-with-project-tables)
+to track your team's work:
+
+1. In your organization, create a new Project (Board view recommended)
+2. Link it to your repository
+3. Use GitHub Issues for task tracking — create issues before starting work and
+   reference them in PRs (e.g., `Closes #12`)
+4. **Each milestone submission must include the Project board link**
+
+### 5. Configure Branch Protection
+
+In repository **Settings > Branches**, add a rule for `main`:
+
+- [x] Require a pull request before merging
+- [x] Require approvals (at least 1)
+- [x] Require status checks to pass before merging (select `Backend CI` and
+  `Frontend CI` after your first push triggers them)
+- [x] Do not allow bypassing the above settings
+
+---
+
+## Pinned Toolchain
+
+Every version below is **frozen for the term**. They are deliberately one
+release line behind the newest available so that builds are reproducible on
+every teammate's and every grader's machine.
+
+| Component | Version | Pinned in |
+| --- | --- | --- |
+| Android Gradle Plugin | 8.13.2 | `frontend/gradle/libs.versions.toml` |
+| Gradle | 8.14.5 | `frontend/gradle/wrapper/gradle-wrapper.properties` |
+| Kotlin | 2.1.21 | `frontend/gradle/libs.versions.toml` |
+| JDK (build + bytecode target) | 17 | `frontend/gradle/gradle-daemon-jvm.properties`, `kotlin { jvmToolchain(17) }` |
+| `compileSdk` / `targetSdk` | 35 | `frontend/gradle/libs.versions.toml` |
+| `minSdk` | 26 | `frontend/gradle/libs.versions.toml` |
+| Compose BOM | 2025.06.01 | `frontend/gradle/libs.versions.toml` |
+| Node.js | 22 (LTS) | `.nvmrc`, `backend/package.json` (`engines`) |
+| npm | 10.9.9 | `backend/package.json` (`packageManager`) |
+
+### Changing a pinned version
+
+Don't, unless you have to. If you must: change it in the file listed above
+(never in Android Studio's UI), verify `./scripts/grade.sh` still passes from a
+clean clone, and record the change in `CHANGELOG.md` with the reason.
+
+---
+
+## Prerequisites
+
+* **Android SDK.** Install the required packages and accept licenses:
+
+  ```bash
+  sdkmanager --licenses
+  sdkmanager "platforms;android-35" "build-tools;35.0.0"
+  ```
+
+  Point the build at your SDK by exporting `ANDROID_HOME` (preferred) or
+  letting Android Studio write `frontend/local.properties`. That file is
+  machine-specific and **not** in version control.
+
+* **JDK.** You do not need to install one.
+  `frontend/gradle/gradle-daemon-jvm.properties` pins the daemon to Java 17 and
+  Gradle downloads a matching JDK on first build.
+
+* **Node.js 22.** With [nvm](https://github.com/nvm-sh/nvm), run `nvm use` in
+  the repo root. Always install backend dependencies with `npm ci` (not
+  `npm install`).
+
+* **Docker.** Required for running the database and other services locally.
+
+---
+
+## Getting Started
+
+### Backend
+
+```bash
+cp backend/.env.example backend/.env   # then fill in API keys
+npm ci --prefix backend
+npm run dev --prefix backend           # starts dev server with hot reload
+```
+
+Or use Docker for the full stack (backend + MongoDB):
+
+```bash
+./scripts/docker-up.sh
+```
+
+### Frontend
+
+```bash
+cp frontend/local.properties.example frontend/local.properties
+# Edit local.properties: set sdk.dir, API_BASE_URL, and GOOGLE_CLIENT_ID
+```
+
+Then open `frontend/` in Android Studio, or build from the command line:
+
+```bash
+cd frontend && ./gradlew assembleDebug
+```
+
+### Verifying Your Setup
+
+Run the same checks a TA runs:
+
+```bash
+./scripts/grade.sh
+```
+
+This starts Docker services, runs backend typecheck/tests/build, polls
+`GET /health`, then builds the frontend and runs unit tests.
+
+---
+
+## CI/CD
+
+This template includes three GitHub Actions workflows that run automatically:
+
+| Workflow | Trigger | What it does |
+| --- | --- | --- |
+| **Backend CI** | Push / PR to `main` | `npm ci` → typecheck → test → build → health check |
+| **Frontend CI** | Push / PR to `main` | `assembleDebug` → unit tests → **uploads APK as artifact** |
+| **Release** | Push `submission-*` tag | Builds APK → creates GitHub Release with APK attached |
+
+TAs download the debug APK from:
+- **During development:** Actions tab → Frontend CI run → Artifacts section
+- **At submission:** Releases page (created automatically when you push a tag)
+
+---
+
+## Submission Workflow
+
+Each milestone submission uses a **git tag** and **GitHub Release**:
+
+1. Make sure all CI checks pass on `main`
+2. Tag the commit:
+
+   ```bash
+   git tag submission-m1
+   git push origin submission-m1
+   ```
+
+3. The **Release** workflow automatically builds the debug APK and creates a
+   GitHub Release with the APK attached
+4. Record the tagged commit SHA in your
+   [testing document](doc/Testing_And_Code_Review.md)
+
+| Milestone | Tag |
+| --- | --- |
+| Milestone 1 | `submission-m1` |
+| Milestone 2 | `submission-m2` |
+| Milestone 3 | `submission-m3` |
+| Final | `submission-final` |
+
+TAs grade the tagged commit locally with `./scripts/grade.sh` and download the
+APK from the GitHub Release — **do not submit APKs manually**.
+
+---
 
 ## Template Structure
-The template repository is structured as follows:
-* `.github/`: GitHub Actions workflows. You will need this at a later stage of the project.
-* `backend/`: Backend code for the project.
-* `frontend/`: Frontend code for the project.
-* `docs/`: Documentation for the project.
-* `.gitignore`: A file that tells Git which files to ignore.
-* `README.md`: This file.
-* `CHANGELOG.md`: A log of changes made to the project.
-* `.eslintrc.json`: The configuration file for the [ESLint](https://eslint.org/) tool, which you will need later for code review. 
-* `checkstyle.xml`: The configuration file for the [CheckStyle](https://checkstyle.sourceforge.io/) tool, which you will need later for code review. 
-* `ruleset.xml`: The configuration file for the [PMD](https://pmd.github.io/) tool, which you will need later for code review. 
 
-## Guidelines
-* The `.gitkeep` files inside the folders are used to keep the folders in the repository. You can delete them once you add files to the folders.
-* **Please make sure to keep these folders and files throughout your project.**  You can add additional folders and files as needed.
-* You can decide how to structure your files within each of these folders. For example, in the `backend/` folder, you can have a `src/` folder for source code, a `test/` folder for tests, and a `config/` folder for configuration files, if any.
-
-## Checklist for Setting Up Your Repository
-Please make sure to complete the following steps to setup your project repository: 
-- [ ] Create your project repository from this template, following the instructions [here](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
-- [ ] Rename your repository, replace `ProjectName` with the actual name of your project.
-- [ ] Update the `README.md` file with the necessary information about your project, e.g., what your project is about.
-- [ ] Add all TAs ([@Masihbr](https://github.com/Masihbr), [@fatteme](https://github.com/fatteme), [@theosiemensrhodes](https://github.com/fatteme), [@dorawyy](https://github.com/fatteme)) to your repository and grant them write access, following the instructions [here](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-teams-and-people-with-access-to-your-repository#inviting-a-team-or-person).
+| Path | Purpose |
+| --- | --- |
+| `.github/workflows/` | CI/CD workflows (backend, frontend, release) |
+| `.github/pull_request_template.md` | Standardized PR description template |
+| `.github/ISSUE_TEMPLATE/` | Bug report and feature request templates |
+| `backend/` | Node.js + TypeScript backend |
+| `frontend/` | Android (Kotlin + Compose) frontend |
+| `doc/` | Requirements, design, and testing documents |
+| `scripts/grade.sh` | One-command local grading script for TAs |
+| `docker-compose.yml` | Database and backend services for local dev |
+| `.eslintrc.json` | ESLint config — read by Codacy (do not move) |
+| `detekt.yml` | Detekt config — read by Codacy (do not move) |
+| `.nvmrc` | Pins Node.js version for `nvm use` |
+| `CHANGELOG.md` | Log of toolchain or template changes |
