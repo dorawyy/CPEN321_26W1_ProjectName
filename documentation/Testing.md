@@ -1,4 +1,4 @@
-# Testing and Code Review
+# Testing
 
 ## 1. Change History
 
@@ -40,17 +40,13 @@
 
 `~/.github/workflows/backend-tests.yml`
 
-### 2.3. Jest Coverage Report Screenshots for Tests Without Mocking
+### 2.3. Jest Coverage Report Screenshots With Mocks
 
-_(Placeholder for Jest coverage screenshot without mocking)_
+_(Placeholder for Jest coverage screenshot with mocks enabled)_
 
-### 2.4. Jest Coverage Report Screenshots for Tests With Mocking
+### 2.4. Jest Coverage Report Screenshots Without Mocks
 
-_(Placeholder for Jest coverage screenshot with mocking)_
-
-### 2.5. Jest Coverage Report Screenshots for Both Tests With and Without Mocking
-
-_(Placeholder for Jest coverage screenshot both with and without mocking)_
+_(Placeholder for Jest coverage screenshot without mocks)_
 
 ---
 
@@ -123,32 +119,3 @@ _(Placeholder for Jest coverage screenshot both with and without mocking)_
     ```
 
 - **...**
-
----
-
-## 5. Automated Code Review Results
-
-### 5.1. Commit Hash Where Codacy Ran
-
-`[Insert Commit SHA here]`
-
-### 5.2. Unfixed Issues per Codacy Category
-
-_(Placeholder for screenshots of Codacy's Category Breakdown table in Overview)_
-
-### 5.3. Unfixed Issues per Codacy Code Pattern
-
-_(Placeholder for screenshots of Codacy's Issues page)_
-
-### 5.4. Justifications for Unfixed Issues
-
-- **Code Pattern: [Usage of Deprecated Modules](#)**
-
-  1. **Issue**
-
-     - **Location in Git:** [`src/services/chatService.js#L31`](#)
-     - **Justification:** ...
-
-  2. ...
-
-- ...

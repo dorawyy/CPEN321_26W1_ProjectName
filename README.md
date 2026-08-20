@@ -6,7 +6,7 @@ Complete these steps when your team first creates the repository.
 
 ### 1. Create a GitHub Organization
 
-1. One team member creates a GitHub Organization.
+1. One team member creates a GitHub Organization: https://docs.github.com/en/organizations/collaborating-with-groups-in-organizations/creating-a-new-organization-from-scratch.
 2. Add all teammates as organization members.
 3. Add all TAs as organization members with **write** access:
    - Masih [@Masihbr](https://github.com/Masihbr)
@@ -31,7 +31,7 @@ Codacy (https://www.codacy.com/) is an automated code review tool that you will 
     * ESLint for TypeScript 
     * Trivy for Kotlin and TypeScript
 4. The `detekt.yml` and `.eslintrc.json` in the repo root directory are configuration files for Codacy to use.
-5. Configure Codacy to (a) use the selected configuration files for detekt and ESLint and (b) enable all five code patterns for Trivy: https://docs.codacy.com/repositories-configure/configuring-code-patterns/ .
+5. Configure Codacy to (a) use the selected configuration files for detekt and ESLint and (b) enable all code patterns for Trivy: https://docs.codacy.com/repositories-configure/configuring-code-patterns/ .
 
 > **⚠️ NOTE: Do not alter the provided configuration files or Codacy setup in any way. Specifically, do not disable any Codacy checks, do not exclude any files, do not use inline code comments to suppress issues, etc.**
 
@@ -41,34 +41,20 @@ Use GitHub Projects (https://docs.github.com/en/issues/planning-and-tracking-wit
 
 1. In your Organization, create a new Project. 
 2. Link it to your Repository. 
-3. Use GitHub Issues for task tracking. You should create issues before starting work and reference them in PRs (e.g., `Closes #12`)
+3. Use GitHub Issues for task tracking. You should create issues before starting work and reference them in Pull Requests.
 
 ---
 
-## Getting Started
+## Build and Run (for TAs)
 
-### Backend
+TAs will grade your project by cloning your repository and running `./run.sh` on their local machine.
 
-```bash
-cd backend
-cp .env.example backend/.env   # then fill in API keys and environment variables
-npm ci
-npm run dev          # starts dev server with hot reload
-```
+Before you submit, verify the full flow yourself:
 
-### Frontend
+1. Clone a fresh copy of your repo (not your existing development folder).
+2. Follow the setup steps you document for TAs (e.g. creating `backend/.env` and `frontend/local.properties`).
+3. Run `./run.sh` and confirm the application builds, runs, and functions as expected.
 
-```bash
-cd frontend
-cp local.properties.example frontend/local.properties
-# Edit local.properties: set sdk.dir, API_BASE_URL, and GOOGLE_CLIENT_ID, etc
-```
-
-Then open `frontend/` in Android Studio, or build from the command line:
-
-```bash
-cd frontend && ./gradlew assembleDebug
-```
 ---
 
 ## Template Structure
@@ -77,6 +63,6 @@ cd frontend && ./gradlew assembleDebug
 | --- | --- |
 | `backend/` | Node.js + TypeScript backend |
 | `frontend/` | Android (Kotlin + Compose) frontend |
-| `doc/` | Requirements, design, and testing documents, weekly reports |
+| `documentation/` | Requirements, design, and testing documents, weekly reports |
 | `.eslintrc.json` | ESLint config read by Codacy (do not move or modify) |
 | `detekt.yml` | Detekt config read by Codacy (do not move or modify) |

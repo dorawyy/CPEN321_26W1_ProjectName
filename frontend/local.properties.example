@@ -1,20 +1,10 @@
-# Copy this file to local.properties (which is gitignored):
-#
-#   cp local.properties.example local.properties
-#
-# Then fill in the values below. Never commit local.properties — it may contain
-# machine-specific paths and OAuth client IDs.
-
 # Path to your Android SDK. Android Studio usually writes this for you.
 sdk.dir=/path/to/Android/sdk
 
 # Backend base URL baked into the APK at build time.
-#
-#   - Android emulator: use http://10.0.2.2:PORT (maps to the host's localhost)
-#   - Physical device on the same Wi-Fi: use http://YOUR_LAN_IP:PORT
-#   - TA grading / CI: scripts/grade.sh generates this automatically
 API_BASE_URL=http://10.0.2.2:3000
 
-# Google OAuth *web* client ID (from Google Cloud Console).
-# Leave empty until you add Google Sign-In. Do not hard-code this in source.
+# Google OAuth client ID.
 GOOGLE_CLIENT_ID=
+
+# Other API keys, secrets, and configurations
