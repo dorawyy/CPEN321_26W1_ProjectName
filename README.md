@@ -11,6 +11,7 @@ Complete these steps when your team first creates the repository.
 3. Add all TAs as organization members with **write** access:
    - Masih [@Masihbr](https://github.com/Masihbr)
    - Michael [@mickowale](https://github.com/mickowale)
+   - Sarah [@sarahdagger](https://github.com/sarahdagger)
    - Yingying [@dorawyy](https://github.com/dorawyy)
 
 ### 2. Create Repository from Template
@@ -49,22 +50,18 @@ Use GitHub Projects (https://docs.github.com/en/issues/planning-and-tracking-wit
 ### Backend
 
 ```bash
-cp backend/.env.example backend/.env   # then fill in API keys and environment variables
-npm ci --prefix backend
-npm run dev --prefix backend           # starts dev server with hot reload
-```
-
-Or use Docker for the full stack (backend + MongoDB):
-
-```bash
-./scripts/docker-up.sh
+cd backend
+cp .env.example backend/.env   # then fill in API keys and environment variables
+npm ci
+npm run dev          # starts dev server with hot reload
 ```
 
 ### Frontend
 
 ```bash
-cp frontend/local.properties.example frontend/local.properties
-# Edit local.properties: set sdk.dir, API_BASE_URL, and GOOGLE_CLIENT_ID
+cd frontend
+cp local.properties.example frontend/local.properties
+# Edit local.properties: set sdk.dir, API_BASE_URL, and GOOGLE_CLIENT_ID, etc
 ```
 
 Then open `frontend/` in Android Studio, or build from the command line:
@@ -72,72 +69,14 @@ Then open `frontend/` in Android Studio, or build from the command line:
 ```bash
 cd frontend && ./gradlew assembleDebug
 ```
-
-### Verifying Your Setup
-
-Run the same checks a TA runs:
-
-```bash
-./scripts/grade.sh
-```
-
-This starts Docker services, runs backend typecheck/tests/build, polls `GET /health`, then builds the frontend and runs tests.
-
----
-
-## CI/CD
-
-This template includes three GitHub Actions workflows that run automatically:
-
-| Workflow | Trigger | What it does |
-| --- | --- | --- |
-| **Backend CI** | Push / PR to `main` | `npm ci` → typecheck → test → build → health check |
-| **Frontend CI** | Push / PR to `main` | `assembleDebug` → unit tests → **uploads APK as artifact** |
-| **Release** | Push `submission-*` tag | Builds APK → creates GitHub Release with APK attached |
-
-TAs download the debug APK from:
-- **During development:** Actions tab → Frontend CI run → Artifacts section
-- **At submission:** Releases page (created automatically when you push a tag)
-
----
-
-## Submission Workflow
-
-Each milestone submission uses a **git tag** and **GitHub Release**:
-
-1. Make sure all CI checks pass on `main`
-2. Tag the commit:
-
-   ```bash
-   git tag submission-m1
-   git push origin submission-m1
-   ```
-
-3. The **Release** workflow automatically builds the debug APK and creates a GitHub Release with the APK attached
-4. Record the tagged commit SHA in your [testing document](doc/Testing_And_Code_Review.md)
-
-| Milestone | Tag |
-| --- | --- |
-| Milestone 1 | `submission-m1` |
-| Milestone 2 | `submission-m2` |
-| Milestone 3 | `submission-m3` |
-| Final | `submission-final` |
-
-TAs grade the tagged commit locally with `./scripts/grade.sh` and download the APK from the GitHub Release. 
-
 ---
 
 ## Template Structure
 
 | Path | Purpose |
 | --- | --- |
-| `.github/workflows/` | CI/CD workflows (backend, frontend, release) |
-| `.github/pull_request_template.md` | Standardized PR description template |
-| `.github/ISSUE_TEMPLATE/` | Bug report and feature request templates |
 | `backend/` | Node.js + TypeScript backend |
 | `frontend/` | Android (Kotlin + Compose) frontend |
-| `doc/` | Requirements, design, and testing documents |
-| `scripts/grade.sh` | One-command local grading script for TAs |
-| `docker-compose.yml` | Database and backend services for local dev |
+| `doc/` | Requirements, design, and testing documents, weekly reports |
 | `.eslintrc.json` | ESLint config read by Codacy (do not move or modify) |
 | `detekt.yml` | Detekt config read by Codacy (do not move or modify) |

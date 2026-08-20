@@ -49,3 +49,6 @@ google-services.json
 
 # macOS files
 .DS_Store
+
+# Verity — snapshots of analyzed files (machine state, never commit)
+.verity/.snapshot/
