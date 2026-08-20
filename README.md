@@ -31,7 +31,7 @@ Codacy (https://www.codacy.com/) is an automated code review tool that you will 
     * ESLint for TypeScript 
     * Trivy for Kotlin and TypeScript
 4. The `detekt.yml` and `.eslintrc.json` in the repo root directory are configuration files for Codacy to use.
-5. Configure Codacy to (a) use the selected configuration files for detekt and ESLint and (b) enable all five code patterns for Trivy: https://docs.codacy.com/repositories-configure/configuring-code-patterns/ .
+5. Configure Codacy to (a) use the selected configuration files for detekt and ESLint and (b) enable all code patterns for Trivy: https://docs.codacy.com/repositories-configure/configuring-code-patterns/ .
 
 > **⚠️ NOTE: Do not alter the provided configuration files or Codacy setup in any way. Specifically, do not disable any Codacy checks, do not exclude any files, do not use inline code comments to suppress issues, etc.**
 
