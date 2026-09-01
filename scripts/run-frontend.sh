@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 #
-# Assumes config is already done (backend/.env, frontend/local.properties).
-#   1. Starts docker compose
-#   2. Starts the emulator named AVD_NAME (default: "Pixel_9")
-#   3. Builds, installs, and launches the app
+# Assumes config (e.g., frontend/local.properties) is already setup:
+#   1. Starts the emulator named AVD_NAME (default: "Pixel_9")
+#   2. Builds, installs, and launches the app
 #
 # Override the emulator name if needed:
-#   AVD_NAME=EMULATOR_NAME ./run.sh
+#   AVD_NAME=EMULATOR_NAME ./scripts/run-frontend.sh
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 FRONTEND_DIR="${FRONTEND_DIR:-frontend}"
@@ -22,12 +21,8 @@ die()   { printf '\033[31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 # ---------------------------------------------------------------------------
 # Prerequisites
 # ---------------------------------------------------------------------------
-command -v docker >/dev/null 2>&1 || die "Docker not found."
-docker info >/dev/null 2>&1       || die "Docker is not running."
-command -v java >/dev/null 2>&1    || die "Java not found."
-command -v curl >/dev/null 2>&1    || die "curl not found."
+command -v java >/dev/null 2>&1 || die "Java not found."
 
-[[ -f backend/.env ]] || die "Missing backend/.env — follow the student setup guide first."
 [[ -f "$FRONTEND_DIR/local.properties" ]] || die "Missing $FRONTEND_DIR/local.properties."
 [[ -x "$FRONTEND_DIR/gradlew" ]] || die "Missing $FRONTEND_DIR/gradlew."
 
@@ -46,25 +41,6 @@ ADB="$ANDROID_HOME/platform-tools/adb"
 [[ -x "$EMULATOR" ]] || die "Android emulator not installed."
 [[ -x "$ADB" ]]     || die "adb not found."
 
-BACKEND_PORT="$(grep -E '^PORT=' backend/.env | head -1 | cut -d= -f2- | tr -d ' "' || true)"
-BACKEND_HEALTH_URL="${BACKEND_HEALTH_URL:-http://localhost:${BACKEND_PORT:-3000}/health}"
-
-# ---------------------------------------------------------------------------
-# Backend
-# ---------------------------------------------------------------------------
-
-info "Starting backend (docker compose up --build -d)..."
-docker compose up --build -d
-
-info "Waiting for $BACKEND_HEALTH_URL ..."
-for _ in $(seq 1 120); do
-  curl -sf "$BACKEND_HEALTH_URL" >/dev/null 2>&1 && break
-  sleep 1
-done
-curl -sf "$BACKEND_HEALTH_URL" >/dev/null 2>&1 || die "Backend not healthy. Try: docker compose logs backend"
-
-info "Backend is up."
-
 # ---------------------------------------------------------------------------
 # Emulator
 # ---------------------------------------------------------------------------
@@ -73,7 +49,7 @@ if "$ADB" devices | grep -qE '^emulator-[0-9]+\s+device$'; then
   info "Emulator already running."
 else
   "$EMULATOR" -list-avds 2>/dev/null | grep -qx "$AVD_NAME" || die \
-    "No AVD named '$AVD_NAME'. Create it in Android Studio (Device Manager), or run: AVD_NAME=YourAvdName ./run.sh"
+    "No AVD named '$AVD_NAME'. Create it in Android Studio (Device Manager), or run: AVD_NAME=YourAvdName ./scripts/run-frontend.sh"
 
   info "Starting emulator '$AVD_NAME' ..."
   "$EMULATOR" -avd "$AVD_NAME" -no-snapshot-save >/dev/null 2>&1 &
@@ -103,4 +79,4 @@ info "Launching app..."
 "$ADB" shell monkey -p "$APPLICATION_ID" -c android.intent.category.LAUNCHER 1 >/dev/null
 
 echo
-info "Done. Sign in on the emulator to verify. Stop backend: docker compose down"
+info "Done. Sign in on the emulator to verify."

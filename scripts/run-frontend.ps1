@@ -1,24 +1,23 @@
 #!/usr/bin/env pwsh
 <#
-Assumes config is already done (backend\.env, frontend\local.properties).
-  1. Starts docker compose
-  2. Starts the emulator named $env:AVD_NAME (default: "Pixel_9")
-  3. Builds, installs, and launches the app
+Assumes config (e.g., frontend\local.properties) is already setup:
+  1. Starts the emulator named $env:AVD_NAME (default: "Pixel_9")
+  2. Builds, installs, and launches the app
 
 Override the emulator name if needed:
-  $env:AVD_NAME = "EMULATOR_NAME"; .\run.ps1
+  $env:AVD_NAME = "EMULATOR_NAME"; .\scripts\run-frontend.ps1
 
 NOTE ON EXECUTION POLICY:
   Windows blocks script execution by default. If running this script fails
   with a message about execution policies, either:
     - run once: Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-    - or launch with: pwsh -ExecutionPolicy Bypass -File run.ps1
+    - or launch with: pwsh -ExecutionPolicy Bypass -File .\scripts\run-frontend.ps1
 #>
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$Root = (Resolve-Path (Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) '..')).Path
 Set-Location $Root
 
 $FrontendDir = if ($env:FRONTEND_DIR) { $env:FRONTEND_DIR } else { 'frontend' }
@@ -31,13 +30,8 @@ function Die($msg)  { Write-Host "ERROR: $msg" -ForegroundColor Red; exit 1 }
 # Prerequisites
 # ---------------------------------------------------------------------------
 
-if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { Die "Docker not found." }
-docker info *> $null
-if ($LASTEXITCODE -ne 0) { Die "Docker is not running." }
 if (-not (Get-Command java -ErrorAction SilentlyContinue))  { Die "Java not found." }
-if (-not (Get-Command curl.exe -ErrorAction SilentlyContinue))  { Die "curl.exe not found." }
 
-if (-not (Test-Path 'backend\.env'))                          { Die "Missing backend\.env - follow the student setup guide first." }
 if (-not (Test-Path (Join-Path $FrontendDir 'local.properties'))) { Die "Missing $FrontendDir\local.properties." }
 
 $gradlew = Join-Path $FrontendDir 'gradlew.bat'
@@ -71,32 +65,6 @@ $Adb      = Join-Path $env:ANDROID_HOME 'platform-tools\adb.exe'
 if (-not (Test-Path $Emulator)) { Die "Android emulator not installed." }
 if (-not (Test-Path $Adb))      { Die "adb not found." }
 
-$backendPortLine = Get-Content 'backend\.env' | Where-Object { $_ -match '^PORT=' } | Select-Object -First 1
-$BackendPort = '3000'
-if ($backendPortLine) {
-    $BackendPort = ($backendPortLine -replace '^PORT=', '').Trim(' ', '"')
-}
-$BackendHealthUrl = if ($env:BACKEND_HEALTH_URL) { $env:BACKEND_HEALTH_URL } else { "http://localhost:$BackendPort/health" }
-
-# ---------------------------------------------------------------------------
-# Backend
-# ---------------------------------------------------------------------------
-
-Info "Starting backend (docker compose up --build -d)..."
-docker compose up --build -d
-if ($LASTEXITCODE -ne 0) { Die "docker compose failed." }
-
-Info "Waiting for $BackendHealthUrl ..."
-$healthy = $false
-for ($i = 0; $i -lt 120; $i++) {
-    curl.exe -sf $BackendHealthUrl *> $null
-    if ($LASTEXITCODE -eq 0) { $healthy = $true; break }
-    Start-Sleep -Seconds 1
-}
-if (-not $healthy) { Die "Backend not healthy. Try: docker compose logs backend" }
-
-Info "Backend is up."
-
 # ---------------------------------------------------------------------------
 # Emulator
 # ---------------------------------------------------------------------------
@@ -110,7 +78,7 @@ if ($emulatorRunning) {
 else {
     $avdList = & $Emulator -list-avds 2>$null
     if (-not ($avdList -contains $AvdName)) {
-        Die "No AVD named '$AvdName'. Create it in Android Studio (Device Manager), or run: `$env:AVD_NAME = 'YourAvdName'; .\run.ps1"
+        Die "No AVD named '$AvdName'. Create it in Android Studio (Device Manager), or run: `$env:AVD_NAME = 'YourAvdName'; .\scripts\run-frontend.ps1"
     }
 
     $emulatorLog = Join-Path $env:TEMP "emulator-$AvdName.log"
@@ -175,4 +143,4 @@ Info "Launching app..."
 & $Adb shell monkey -p $ApplicationId -c android.intent.category.LAUNCHER 1 | Out-Null
 
 Write-Host ""
-Info "Done. Sign in on the emulator to verify. Stop backend: docker compose down"
+Info "Done. Sign in on the emulator to verify."
